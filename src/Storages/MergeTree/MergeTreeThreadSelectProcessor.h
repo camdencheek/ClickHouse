@@ -17,7 +17,6 @@ public:
     MergeTreeThreadSelectProcessor(
         size_t thread_,
         const std::shared_ptr<MergeTreeReadPool> & pool_,
-        size_t min_marks_to_read_,
         UInt64 max_block_size_,
         size_t preferred_block_size_bytes_,
         size_t preferred_max_column_in_block_size_bytes_,
@@ -49,7 +48,6 @@ private:
     size_t thread;
 
     std::shared_ptr<MergeTreeReadPool> pool;
-    size_t min_marks_to_read;
 
     /// Last part read in this thread
     std::string last_readed_part_name;

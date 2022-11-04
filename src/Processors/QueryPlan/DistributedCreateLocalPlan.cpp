@@ -61,7 +61,12 @@ std::unique_ptr<QueryPlan> createLocalPlan(
     interpreter.setProperClientInfo(replica_num, replica_count);
     if (coordinator)
     {
-        interpreter.setMergeTreeReadTaskCallbackAndClientInfo([coordinator](PartitionReadRequest request) -> std::optional<PartitionReadResponse>
+        interpreter.setMergeTreeReadTaskCallbackAndClientInfo(
+        [coordinator](InitialAllRangesAnnouncement announcement)
+        {
+            coordinator->handleInitialAllRangesAnnouncement(announcement);
+        },
+        [coordinator](ParallelReadRequest request) -> std::optional<ParallelReadResponse>
         {
             return coordinator->handleRequest(request);
         });

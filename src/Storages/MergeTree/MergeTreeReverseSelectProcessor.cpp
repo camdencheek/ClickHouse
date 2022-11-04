@@ -23,7 +23,8 @@ try
         initializeReaders();
 
     /// Read ranges from right to left.
-    MarkRanges mark_ranges_for_task = { all_mark_ranges.back() };
+    auto mark_ranges_for_task = MarkRanges{};
+    mark_ranges_for_task.emplace_front(std::move(all_mark_ranges.back()));
     all_mark_ranges.pop_back();
 
     auto size_predictor = (preferred_block_size_bytes == 0) ? nullptr

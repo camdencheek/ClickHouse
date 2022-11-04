@@ -682,7 +682,7 @@ MergeTreeBaseSelectProcessor::Status MergeTreeBaseSelectProcessor::performReques
         .end = task->data_part->info.max_block
     };
 
-    PartitionReadRequest request
+    ParallelReadRequest request
     {
         .partition_id = std::move(partition_id),
         .part_name = std::move(part_name),

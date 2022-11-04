@@ -125,7 +125,7 @@ TEST(HalfIntervals, SelfIntersection)
 
 TEST(Coordinator, Simple)
 {
-    PartitionReadRequest request;
+    ParallelReadRequest request;
     request.partition_id = "a";
     request.part_name = "b";
     request.projection_name = "c";
@@ -149,7 +149,7 @@ TEST(Coordinator, Simple)
 
 TEST(Coordinator, TwoRequests)
 {
-    PartitionReadRequest first;
+    ParallelReadRequest first;
     first.partition_id = "a";
     first.part_name = "b";
     first.projection_name = "c";

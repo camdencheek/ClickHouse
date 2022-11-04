@@ -1,5 +1,7 @@
 #include "MarkRange.h"
 
+#include <IO/ReadHelpers.h>
+
 namespace DB
 {
 
@@ -46,6 +48,38 @@ std::string toString(const MarkRanges & ranges)
         result += "(" + std::to_string(mark_range.begin) + ", " + std::to_string(mark_range.end) + ")";
     }
     return result;
+}
+
+void MarkRanges::serialize(WriteBuffer & out) const
+{
+    writeVarUInt(this->size(), out);
+
+    for (const auto & [begin, end] : *this)
+    {
+        writeVarUInt(begin, out);
+        writeVarUInt(end, out);
+    }
+}
+
+void MarkRanges::describe(WriteBuffer & out) const
+{
+    String result;
+    result += toString(this->size());
+    // TODO: More
+    out.write(result.c_str(), result.size());
+}
+
+void MarkRanges::deserialize(ReadBuffer & in)
+{
+    size_t size = 0;
+    readVarUInt(size, in);
+
+    this->resize(size);
+    for (size_t i = 0; i < size; ++i)
+    {
+        readBinary((*this)[i].begin, in);
+        readBinary((*this)[i].end, in);
+    }
 }
 
 }

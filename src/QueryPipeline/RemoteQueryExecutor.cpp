@@ -465,7 +465,7 @@ void RemoteQueryExecutor::processReadTaskRequest()
     connections->sendReadTaskResponse(response);
 }
 
-void RemoteQueryExecutor::processMergeTreeReadTaskRequest(PartitionReadRequest request)
+void RemoteQueryExecutor::processMergeTreeReadTaskRequest(ParallelReadRequest request)
 {
     if (!parallel_reading_coordinator)
         throw Exception("Coordinator for parallel reading from replicas is not initialized", ErrorCodes::LOGICAL_ERROR);

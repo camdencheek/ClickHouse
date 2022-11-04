@@ -180,6 +180,16 @@ Pipe ReadFromMergeTree::readFromPool(
     const auto & client_info = context->getClientInfo();
     MergeTreeReadPool::BackoffSettings backoff_settings(settings);
 
+    /// round min_marks_to_read up to nearest multiple of block_size expressed in marks
+    /// If granularity is adaptive it doesn't make sense
+    /// Maybe it will make sense to add settings `max_block_size_bytes`
+    if (max_block_size && !data.canUseAdaptiveGranularity())
+    {
+        size_t fixed_index_granularity = data.getSettings()->index_granularity;
+        min_marks_for_concurrent_read = (min_marks_for_concurrent_read * fixed_index_granularity + max_block_size - 1)
+            / max_block_size * max_block_size / fixed_index_granularity;
+    }
+
     auto pool = std::make_shared<MergeTreeReadPool>(
         max_streams,
         sum_marks,
@@ -211,7 +221,7 @@ Pipe ReadFromMergeTree::readFromPool(
         }
 
         auto source = std::make_shared<MergeTreeThreadSelectProcessor>(
-            i, pool, min_marks_for_concurrent_read, max_block_size,
+            i, pool, max_block_size,
             settings.preferred_block_size_bytes, settings.preferred_max_column_in_block_size_bytes,
             data, storage_snapshot, use_uncompressed_cache,
             prewhere_info, actions_settings, reader_settings, virt_column_names, std::move(extension));
@@ -734,7 +744,7 @@ Pipe ReadFromMergeTree::spreadMarkRangesAmongStreamsFinal(
 
     /// If do_not_merge_across_partitions_select_final is true and num_streams > 1
     /// we will store lonely parts with level > 0 to use parallel select on them.
-    std::vector<RangesInDataPart> lonely_parts;
+    RangesInDataParts lonely_parts;
     size_t sum_marks_in_lonely_parts = 0;
 
     for (size_t range_index = 0; range_index < parts_to_merge_ranges.size() - 1; ++range_index)

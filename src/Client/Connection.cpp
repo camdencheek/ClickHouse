@@ -671,7 +671,7 @@ void Connection::sendReadTaskResponse(const String & response)
 }
 
 
-void Connection::sendMergeTreeReadTaskResponse(const PartitionReadResponse & response)
+void Connection::sendMergeTreeReadTaskResponse(const ParallelReadResponse & response)
 {
     writeVarUInt(Protocol::Client::MergeTreeReadTaskResponse, *out);
     response.serialize(*out);
@@ -946,7 +946,7 @@ Packet Connection::receivePacket()
                 return res;
 
             case Protocol::Server::MergeTreeReadTaskRequest:
-                res.request = receivePartitionReadRequest();
+                res.request = receiveParallelReadRequest();
                 return res;
 
             case Protocol::Server::ProfileEvents:
@@ -1100,9 +1100,9 @@ ProfileInfo Connection::receiveProfileInfo() const
     return profile_info;
 }
 
-PartitionReadRequest Connection::receivePartitionReadRequest() const
+ParallelReadRequest Connection::receiveParallelReadRequest() const
 {
-    PartitionReadRequest request;
+    ParallelReadRequest request;
     request.deserialize(*in);
     return request;
 }

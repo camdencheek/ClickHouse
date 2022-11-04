@@ -42,7 +42,7 @@ public:
         bool with_pending_data) override;
 
     void sendReadTaskResponse(const String &) override;
-    void sendMergeTreeReadTaskResponse(PartitionReadResponse response) override;
+    void sendMergeTreeReadTaskResponse(ParallelReadResponse response) override;
 
     Packet receivePacket() override;
 

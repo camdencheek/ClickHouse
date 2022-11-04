@@ -12,7 +12,10 @@ class ParallelReplicasReadingCoordinator
 public:
     ParallelReplicasReadingCoordinator();
     ~ParallelReplicasReadingCoordinator();
-    PartitionReadResponse handleRequest(PartitionReadRequest request);
+
+    void handleInitialAllRangesAnnouncement(InitialAllRangesAnnouncement) {}
+    ParallelReadResponse handleRequest(ParallelReadRequest request);
+
 private:
     class Impl;
     std::unique_ptr<Impl> pimpl;

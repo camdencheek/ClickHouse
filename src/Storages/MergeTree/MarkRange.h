@@ -5,6 +5,7 @@
 #include <set>
 
 #include <IO/WriteBuffer.h>
+#include <IO/ReadBuffer.h>
 
 namespace DB
 {
@@ -22,11 +23,17 @@ struct MarkRange
     MarkRange(const size_t begin_, const size_t end_) : begin{begin_}, end{end_} {}
 
     bool operator==(const MarkRange & rhs) const;
-
     bool operator<(const MarkRange & rhs) const;
 };
 
-using MarkRanges = std::deque<MarkRange>;
+struct MarkRanges : public std::deque<MarkRange>
+{
+    using std::deque<MarkRange>::deque;
+
+    void serialize(WriteBuffer & out) const;
+    void describe(WriteBuffer & out) const;
+    void deserialize(ReadBuffer & in);
+};
 
 /** Get max range.end from ranges.
  */

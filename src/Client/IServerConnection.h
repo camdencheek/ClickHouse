@@ -33,8 +33,8 @@ struct Packet
     Progress progress;
     ProfileInfo profile_info;
     std::vector<UUID> part_uuids;
-    PartitionReadRequest request;
-    PartitionReadResponse response;
+    ParallelReadRequest request;
+    ParallelReadResponse response;
 
     Packet() : type(Protocol::Server::Hello) {}
 };
@@ -102,7 +102,7 @@ public:
     /// Send all contents of external (temporary) tables.
     virtual void sendExternalTablesData(ExternalTablesData & data) = 0;
 
-    virtual void sendMergeTreeReadTaskResponse(const PartitionReadResponse & response) = 0;
+    virtual void sendMergeTreeReadTaskResponse(const ParallelReadResponse & response) = 0;
 
     /// Check, if has data to read.
     virtual bool poll(size_t timeout_microseconds) = 0;
