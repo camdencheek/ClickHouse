@@ -365,7 +365,7 @@ void TCPHandler::runImpl()
                 std::lock_guard lock(task_callback_mutex);
 
                 if (state.is_cancelled)
-                    return std::nullopt;
+                    return;
 
                 sendMergeTreeAllRangesAnnounecementAssumeLocked(announcement);
             });

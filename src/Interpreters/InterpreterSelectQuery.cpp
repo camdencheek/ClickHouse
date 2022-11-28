@@ -160,7 +160,7 @@ FilterDAGInfoPtr generateFilterActions(
     table_expr->children.push_back(table_expr->database_and_table_name);
 
     /// Using separate expression analyzer to prevent any possible alias injection
-    auto syntax_result = TreeRewriter(context).analyzeSelect(query_ast, TreeRewriterResult({}, storage, storage_snapshot));
+    auto syntax_result = TreeRewriter(context).analyzeSelect(query_ast, TreeRewriterResult(context, {}, storage, storage_snapshot));
     SelectQueryExpressionAnalyzer analyzer(query_ast, syntax_result, context, metadata_snapshot, {}, false, {}, prepared_sets);
     filter_info->actions = analyzer.simpleSelectActions();
 
@@ -510,7 +510,7 @@ InterpreterSelectQuery::InterpreterSelectQuery(
 
         syntax_analyzer_result = TreeRewriter(context).analyzeSelect(
             query_ptr,
-            TreeRewriterResult(source_header.getNamesAndTypesList(), storage, storage_snapshot),
+            TreeRewriterResult(context, source_header.getNamesAndTypesList(), storage, storage_snapshot),
             options, joined_tables.tablesWithColumns(), required_result_column_names, table_join);
 
         query_info.syntax_analyzer_result = syntax_analyzer_result;
@@ -1874,6 +1874,7 @@ void InterpreterSelectQuery::setMergeTreeReadTaskCallbackAndClientInfo(MergeTree
 
 void InterpreterSelectQuery::setProperClientInfo(size_t replica_num, size_t replica_count)
 {
+    context->getClientInfo().collaborate_with_initiator = true;
     context->getClientInfo().query_kind = ClientInfo::QueryKind::SECONDARY_QUERY;
     context->getClientInfo().count_participating_replicas = replica_count;
     context->getClientInfo().number_of_current_replica = replica_num;
@@ -2165,7 +2166,7 @@ void InterpreterSelectQuery::executeFetchColumns(QueryProcessingStage::Enum proc
      *  instead of max_threads, max_distributed_connections is used.
      */
     bool is_remote = false;
-    if (storage && storage->isRemote())
+    if (storage && storage->isRemote(context))
     {
         is_remote = true;
         max_threads_execute_query = max_streams = settings.max_distributed_connections;
@@ -2534,7 +2535,7 @@ void InterpreterSelectQuery::executeMergeAggregated(QueryPlan & query_plan, bool
         query_plan,
         overflow_row,
         final,
-        storage && storage->isRemote(),
+        storage && storage->isRemote(context),
         has_grouping_sets,
         context->getSettingsRef(),
         query_analyzer->aggregationKeys(),

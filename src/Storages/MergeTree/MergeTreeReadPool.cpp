@@ -1,6 +1,7 @@
 #include <Storages/MergeTree/MergeTreeReadPool.h>
 #include <Storages/MergeTree/MergeTreeBaseSelectProcessor.h>
 #include <Storages/MergeTree/LoadedMergeTreeDataPartInfoForReader.h>
+#include "Common/Stopwatch.h"
 #include <Common/formatReadable.h>
 #include <base/range.h>
 
@@ -47,7 +48,7 @@ MergeTreeReadPool::MergeTreeReadPool(
 }
 
 
-MergeTreeReadTaskPtr MergeTreeReadPool::getTask(size_t thread, const Names & ordered_names)
+MergeTreeReadTaskPtr MergeTreeReadPool::getTask(size_t thread)
 {
     const std::lock_guard lock{mutex};
 
@@ -143,7 +144,7 @@ MergeTreeReadTaskPtr MergeTreeReadPool::getTask(size_t thread, const Names & ord
         : std::make_unique<MergeTreeBlockSizePredictor>(*per_part.size_predictor); /// make a copy
 
     return std::make_unique<MergeTreeReadTask>(
-        part.data_part, ranges_to_get_from_part, part.part_index_in_query, ordered_names,
+        part.data_part, ranges_to_get_from_part, part.part_index_in_query, column_names,
         per_part.column_name_set, per_part.task_columns,
         prewhere_info && prewhere_info->remove_prewhere_column, std::move(curr_task_size_predictor));
 }

@@ -42,7 +42,10 @@ ISource::Status RemoteSource::prepare()
     }
 
     if (is_async_state)
+    {
         return Status::Async;
+    }
+
 
     Status status = ISource::prepare();
     /// To avoid resetting the connection (because of "unfinished" query) in the
@@ -52,6 +55,7 @@ ISource::Status RemoteSource::prepare()
         query_executor->finish(&read_context);
         is_async_state = false;
     }
+
     return status;
 }
 

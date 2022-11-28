@@ -82,7 +82,7 @@ public:
         size_t preferred_block_size_bytes_,
         bool do_not_steal_tasks_ = false);
 
-    MergeTreeReadTaskPtr getTask(size_t thread, const Names & ordered_names);
+    MergeTreeReadTaskPtr getTask(size_t thread);
 
     /** Each worker could call this method and pass information about read performance.
       * If read performance is too low, pool could decide to lower number of threads: do not assign more tasks to several threads.

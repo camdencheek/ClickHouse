@@ -19,18 +19,15 @@
 #include <Storages/MergeTree/ParallelReplicasReadingCoordinator.h>
 #include <Storages/ColumnsDescription.h>
 
-
-#include "Storages/MergeTree/RequestResponse.h"
 #include "config.h"
 
 #include <boost/container/flat_set.hpp>
+#include <exception>
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
-
 #include <thread>
-#include <exception>
 
 
 namespace Poco::Net { class IPAddress; }
@@ -94,7 +91,11 @@ class TransactionsInfoLog;
 class ProcessorsProfileLog;
 class FilesystemCacheLog;
 class AsynchronousInsertLog;
+class IAsynchronousReader;
 struct MergeTreeSettings;
+struct InitialAllRangesAnnouncement;
+struct ParallelReadRequest;
+struct ParallelReadResponse;
 class StorageS3Settings;
 class IDatabase;
 class DDLWorker;
@@ -379,6 +380,7 @@ private:
 
     /// Temporary data for query execution accounting.
     TemporaryDataOnDiskScopePtr temp_data_on_disk;
+
 public:
     /// Some counters for current query execution.
     /// Most of them are workarounds and should be removed in the future.
@@ -400,6 +402,8 @@ public:
     };
 
     KitchenSink kitchen_sink;
+
+    ParallelReplicasReadingCoordinatorPtr parallel_reading_coordinator;
 
 private:
     using SampleBlockCache = std::unordered_map<std::string, Block>;

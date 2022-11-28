@@ -8,6 +8,7 @@
 #include <Processors/QueryPlan/CreatingSetsStep.h>
 #include <Processors/QueryPlan/CubeStep.h>
 #include <Processors/QueryPlan/ReadFromMergeTree.h>
+#include <Processors/QueryPlan/ReadFromRemote.h>
 #include <Processors/QueryPlan/SortingStep.h>
 #include <Processors/QueryPlan/TotalsHavingStep.h>
 #include <Processors/QueryPlan/DistinctStep.h>
@@ -751,7 +752,7 @@ InputOrderInfoPtr buildInputOrderInfo(SortingStep & sorting, QueryPlan::Node & n
 
     if (auto * reading = typeid_cast<ReadFromMergeTree *>(reading_node->step.get()))
     {
-
+        std::cout << "Found ReadFromMergeTree" << std::endl;
         //std::cerr << "---- optimizeReadInOrder found mt" << std::endl;
         auto order_info = buildInputOrderInfo(
             reading,
@@ -763,6 +764,20 @@ InputOrderInfoPtr buildInputOrderInfo(SortingStep & sorting, QueryPlan::Node & n
             reading->requestReadingInOrder(order_info->used_prefix_of_sorting_key_size, order_info->direction, order_info->limit);
 
         return order_info;
+    }
+    else if (auto * remote = typeid_cast<ReadFromParallelRemoteReplicasStep *>(reading_node->step.get()))
+    {
+        std::cout << "Found ReadFromParallelRemoteReplicasStep" << std::endl;
+
+
+        // auto order_info = buildInputOrderInfo(
+        //     remote,
+        //     fixed_columns,
+        //     dag, description,
+        //     limit);
+
+        // if (order_info)
+        remote->requestReadingInOrder();
     }
     else if (auto * merge = typeid_cast<ReadFromMerge *>(reading_node->step.get()))
     {

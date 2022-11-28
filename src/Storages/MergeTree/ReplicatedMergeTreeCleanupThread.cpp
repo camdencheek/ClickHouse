@@ -39,6 +39,7 @@ void ReplicatedMergeTreeCleanupThread::run()
     {
         iterate();
     }
+    catch (const Coordination::Exception & e)
     {
         tryLogCurrentException(log, __PRETTY_FUNCTION__);
 

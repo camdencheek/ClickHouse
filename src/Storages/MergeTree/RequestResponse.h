@@ -48,6 +48,7 @@ struct ParallelReadRequest
     void serialize(WriteBuffer & out) const;
     void describe(WriteBuffer & out) const;
     void deserialize(ReadBuffer & in);
+    void merge(ParallelReadRequest & other);
 };
 
 struct ParallelReadResponse

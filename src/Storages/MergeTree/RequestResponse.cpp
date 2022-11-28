@@ -55,6 +55,13 @@ void ParallelReadRequest::deserialize(ReadBuffer & in)
     description.deserialize(in);
 }
 
+void ParallelReadRequest::merge(ParallelReadRequest & other)
+{
+    assert(mode == other.mode);
+    assert(replica_num == other.replica_num);
+    assert(min_number_of_marks == other.min_number_of_marks);
+    description.merge(other.description);
+}
 
 void ParallelReadResponse::serialize(WriteBuffer & out) const
 {

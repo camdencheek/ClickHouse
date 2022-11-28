@@ -113,6 +113,17 @@ void DistinctSortedTransform::transform(Chunk & chunk)
     if (unlikely(!chunk.hasRows()))
         return;
 
+    std::cout << chunk.dumpStructure() << std::endl;
+    for (const auto & column : chunk.getColumns())
+    {
+        for (size_t i = 0; i < column->size(); ++i)
+        {
+            std::cout << (*column)[i].dump() << ' ';
+        }
+        std::cout << std::endl;
+    }
+
+
     /// get DISTINCT columns from chunk
     column_ptrs.clear();
     for (const auto pos : column_positions)
@@ -128,6 +139,8 @@ void DistinctSortedTransform::transform(Chunk & chunk)
         const auto & column = chunk.getColumns()[pos];
         sort_prefix_columns.emplace_back(column.get());
     }
+
+    std::cout << magic_enum::enum_name(ClearableSetVariants::chooseMethod(column_ptrs, key_sizes)) << std::endl;
 
     if (data.type == ClearableSetVariants::Type::EMPTY)
         data.init(ClearableSetVariants::chooseMethod(column_ptrs, key_sizes));

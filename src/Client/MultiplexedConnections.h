@@ -104,7 +104,8 @@ private:
     bool sent_query = false;
     bool cancelled = false;
 
-    ReplicaInfo replica_info;
+    /// std::nullopt if parallel reading from replicas is not used
+    std::optional<ReplicaInfo> replica_info;
 
     /// A mutex for the sendCancel function to execute safely
     /// in separate thread.

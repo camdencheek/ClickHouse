@@ -60,9 +60,9 @@ public:
     /// Get the replica addresses as a string.
     virtual std::string dumpAddresses() const = 0;
 
-
     struct ReplicaInfo
     {
+        bool collaborate_with_initiator{false};
         size_t all_replicas_count{0};
         size_t number_of_current_replica{0};
     };

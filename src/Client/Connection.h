@@ -262,6 +262,7 @@ private:
     std::unique_ptr<Exception> receiveException() const;
     Progress receiveProgress() const;
     ParallelReadRequest receiveParallelReadRequest() const;
+    InitialAllRangesAnnouncement receiveInitialParallelReadAnnounecement() const;
     ProfileInfo receiveProfileInfo() const;
 
     void initInputBuffers();

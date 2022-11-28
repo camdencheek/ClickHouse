@@ -1,6 +1,8 @@
 #include <TableFunctions/TableFunctionFile.h>
 #include <Interpreters/parseColumnsListForTableFunction.h>
 
+#include <IO/ReadBuffer.h>
+
 #include "Parsers/IAST_fwd.h"
 #include "registerTableFunctions.h"
 #include <Access/Common/AccessFlags.h>

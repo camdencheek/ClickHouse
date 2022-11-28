@@ -33,6 +33,8 @@ struct Packet
     Progress progress;
     ProfileInfo profile_info;
     std::vector<UUID> part_uuids;
+
+    InitialAllRangesAnnouncement announcement;
     ParallelReadRequest request;
     ParallelReadResponse response;
 

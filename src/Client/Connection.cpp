@@ -33,6 +33,7 @@
 #include <pcg_random.hpp>
 #include <base/scope_guard.h>
 
+#include "Interpreters/Context.h"
 #include "config_version.h"
 #include "config.h"
 
@@ -945,6 +946,10 @@ Packet Connection::receivePacket()
             case Protocol::Server::ReadTaskRequest:
                 return res;
 
+            case Protocol::Server::MergeTreeAllRangesAnnounecement:
+                res.announcement = receiveInitialParallelReadAnnounecement();
+                return res;
+
             case Protocol::Server::MergeTreeReadTaskRequest:
                 res.request = receiveParallelReadRequest();
                 return res;
@@ -1105,6 +1110,13 @@ ParallelReadRequest Connection::receiveParallelReadRequest() const
     ParallelReadRequest request;
     request.deserialize(*in);
     return request;
+}
+
+InitialAllRangesAnnouncement Connection::receiveInitialParallelReadAnnounecement() const
+{
+    InitialAllRangesAnnouncement announcement;
+    announcement.deserialize(*in);
+    return announcement;
 }
 
 

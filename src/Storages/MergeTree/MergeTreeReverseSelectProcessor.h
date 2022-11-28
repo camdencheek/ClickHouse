@@ -27,8 +27,13 @@ private:
     bool getNewTaskImpl() override;
     void finalizeNewTask() override {}
 
+    bool getNewTaskParallelReplicas();
+    bool getNewTaskOrdinaryReading();
+
     BlockAndRowCount readFromPart() override;
 
+    /// Used for parallel replicas
+    bool no_more_tasks{false};
     std::vector<BlockAndRowCount> chunks;
     Poco::Logger * log = &Poco::Logger::get("MergeTreeReverseSelectProcessor");
 };
