@@ -4305,7 +4305,7 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
             bool force_grouping_standard_compatibility = scope.context->getSettingsRef().force_grouping_standard_compatibility;
             auto grouping_function = std::make_shared<FunctionGrouping>(force_grouping_standard_compatibility);
             auto grouping_function_adaptor = std::make_shared<FunctionToOverloadResolverAdaptor>(std::move(grouping_function));
-            function_node.resolveAsFunction(std::move(grouping_function_adaptor), std::make_shared<DataTypeUInt64>());
+            function_node.resolveAsFunction(grouping_function_adaptor->build({}));
             return result_projection_names;
         }
     }
@@ -4325,7 +4325,7 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
         AggregateFunctionProperties properties;
         auto aggregate_function = AggregateFunctionFactory::instance().get(function_name, argument_types, parameters, properties);
 
-        function_node.resolveAsWindowFunction(aggregate_function, aggregate_function->getReturnType());
+        function_node.resolveAsWindowFunction(aggregate_function);
 
         bool window_node_is_identifier = function_node.getWindowNode()->getNodeType() == QueryTreeNodeType::IDENTIFIER;
         ProjectionName window_projection_name = resolveWindow(function_node.getWindowNode(), scope);
@@ -4379,7 +4379,7 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
 
         AggregateFunctionProperties properties;
         auto aggregate_function = AggregateFunctionFactory::instance().get(function_name, argument_types, parameters, properties);
-        function_node.resolveAsAggregateFunction(aggregate_function, aggregate_function->getReturnType());
+        function_node.resolveAsAggregateFunction(aggregate_function);
         return result_projection_names;
     }
 
@@ -4551,14 +4551,14 @@ ProjectionNames QueryAnalyzer::resolveFunction(QueryTreeNodePtr & node, Identifi
                 function_node.performConstantFolding(std::make_shared<ConstantValue>(std::move(constant_value), result_type));
             }
         }
+
+        function_node.resolveAsFunction(std::move(function_base));
     }
     catch (Exception & e)
     {
         e.addMessage("In scope {}", scope.scope_node->formatASTForErrorMessage());
         throw;
     }
-
-    function_node.resolveAsFunction(std::move(function), std::move(result_type));
 
     return result_projection_names;
 }

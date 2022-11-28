@@ -59,14 +59,13 @@ private:
     std::unordered_set<String> names_to_collect;
 };
 
-QueryTreeNodePtr createResolvedFunction(const ContextPtr & context, const String & name, const DataTypePtr & result_type, QueryTreeNodes arguments)
+QueryTreeNodePtr createResolvedFunction(const ContextPtr & context, const String & name, QueryTreeNodes arguments)
 {
     auto function_node = std::make_shared<FunctionNode>(name);
 
     auto function = FunctionFactory::instance().get(name, context);
-    function_node->resolveAsFunction(std::move(function), result_type);
     function_node->getArguments().getNodes() = std::move(arguments);
-
+    function_node->resolveAsFunction(function->build(function_node->getArgumentTypes()));
     return function_node;
 }
 
@@ -76,20 +75,20 @@ FunctionNodePtr createResolvedAggregateFunction(const String & name, const Query
 
     AggregateFunctionProperties properties;
     auto aggregate_function = AggregateFunctionFactory::instance().get(name, {argument->getResultType()}, parameters, properties);
-    function_node->resolveAsAggregateFunction(aggregate_function, aggregate_function->getReturnType());
+    function_node->resolveAsAggregateFunction(aggregate_function);
     function_node->getArguments().getNodes() = { argument };
 
     return function_node;
 }
 
-QueryTreeNodePtr createTupleElementFunction(const ContextPtr & context, const DataTypePtr & result_type, QueryTreeNodePtr argument, UInt64 index)
+QueryTreeNodePtr createTupleElementFunction(const ContextPtr & context, QueryTreeNodePtr argument, UInt64 index)
 {
-    return createResolvedFunction(context, "tupleElement", result_type, {std::move(argument), std::make_shared<ConstantNode>(index)});
+    return createResolvedFunction(context, "tupleElement", {argument, std::make_shared<ConstantNode>(index)});
 }
 
-QueryTreeNodePtr createArrayElementFunction(const ContextPtr & context, const DataTypePtr & result_type, QueryTreeNodePtr argument, UInt64 index)
+QueryTreeNodePtr createArrayElementFunction(const ContextPtr & context, QueryTreeNodePtr argument, UInt64 index)
 {
-    return createResolvedFunction(context, "arrayElement", result_type, {std::move(argument), std::make_shared<ConstantNode>(index)});
+    return createResolvedFunction(context, "arrayElement", {argument, std::make_shared<ConstantNode>(index)});
 }
 
 void replaceWithSumCount(QueryTreeNodePtr & node, const FunctionNodePtr & sum_count_node, ContextPtr context)
@@ -107,20 +106,20 @@ void replaceWithSumCount(QueryTreeNodePtr & node, const FunctionNodePtr & sum_co
     if (function_name == "sum")
     {
         assert(node->getResultType()->equals(*sum_count_result_type->getElement(0)));
-        node = createTupleElementFunction(context, node->getResultType(), sum_count_node, 1);
+        node = createTupleElementFunction(context, sum_count_node, 1);
     }
     else if (function_name == "count")
     {
         assert(node->getResultType()->equals(*sum_count_result_type->getElement(1)));
-        node = createTupleElementFunction(context, node->getResultType(), sum_count_node, 2);
+        node = createTupleElementFunction(context, sum_count_node, 2);
     }
     else if (function_name == "avg")
     {
-        auto sum_result = createTupleElementFunction(context, sum_count_result_type->getElement(0), sum_count_node, 1);
-        auto count_result = createTupleElementFunction(context, sum_count_result_type->getElement(1), sum_count_node, 2);
+        auto sum_result = createTupleElementFunction(context, sum_count_node, 1);
+        auto count_result = createTupleElementFunction(context, sum_count_node, 2);
         /// To avoid integer division by zero
-        auto count_float_result = createResolvedFunction(context, "toFloat64", std::make_shared<DataTypeFloat64>(), {count_result});
-        node = createResolvedFunction(context, "divide", node->getResultType(), {sum_result, count_float_result});
+        auto count_float_result = createResolvedFunction(context, "toFloat64", {count_result});
+        node = createResolvedFunction(context, "divide", {sum_result, count_float_result});
     }
     else
     {
@@ -196,8 +195,8 @@ void tryFuseQuantiles(QueryTreeNodePtr query_tree_node, ContextPtr context)
                 "Unexpected return type '{}' of function '{}', should be array",
                 quantiles_node->getResultType(), quantiles_node->getFunctionName());
 
-        for (size_t i = 0; i < nodes_size; ++i)
-            *nodes[i] = createArrayElementFunction(context, result_array_type->getNestedType(), quantiles_node, i + 1);
+        for (size_t i = 0; i < nodes.size(); ++i)
+            *nodes[i] = createArrayElementFunction(context, quantiles_node, i + 1);
     }
 }
 
